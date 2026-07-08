@@ -1,0 +1,8 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": [
+    "MarkovianProtocol"
+  ],
+  "name": "Markovian Provenance",
+  "description": "Bitcoin-anchored, independently verifiable provenance for AI outputs. Stamp an output to a canonical root, verify it by pure recomputation, and trace its lineage. Verify offline, trust no one."
+}
