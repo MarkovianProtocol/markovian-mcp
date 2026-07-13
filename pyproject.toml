@@ -1,13 +1,13 @@
 [project]
 name = "markovian-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "Bitcoin-anchored, independently verifiable provenance for AI outputs, exposed as MCP tools."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Markovian Protocol" }]
 keywords = ["mcp", "model-context-protocol", "provenance", "bitcoin", "verifiable", "audit"]
-dependencies = ["mcp>=1.2.0"]
+dependencies = ["mcp>=1.2.0", "httpx>=0.27", "anyio>=4.0"]
 
 [project.urls]
 Homepage = "https://markovianprotocol.com"
