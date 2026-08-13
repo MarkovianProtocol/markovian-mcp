@@ -188,7 +188,65 @@ _STAMP_OUTPUT_SCHEMA = {
                  "stamped_at", "verify", "attestation"],
 }
 
+LOG_BASE = "https://log.markovianprotocol.com"
+
+
+def notarize(sha256: str = None, path: str = None) -> dict:
+    """Hash-only public notarization: POST the sha256 to the log's /submit door.
+
+    If `path` is given the file is hashed locally and never leaves this machine;
+    only 32 bytes of hash are sent.
+    """
+    if path:
+        h = hashlib.sha256(open(path, "rb").read()).hexdigest()
+    elif sha256:
+        h = sha256.strip().lower().removeprefix("sha256:")
+    else:
+        raise ValueError("provide sha256 or path")
+    if len(h) != 64 or any(c not in "0123456789abcdef" for c in h):
+        raise ValueError("sha256 must be 64 hex chars")
+    r = httpx.post(f"{LOG_BASE}/submit", content=f"sha256:{h}", timeout=TIMEOUT)
+    r.raise_for_status()
+    out = r.json()
+    out["offline_proof"] = f"{LOG_BASE}/proof/{out['leaf_index']}"
+    out["policy"] = f"{LOG_BASE}/policy"
+    return out
+
+
 TOOLS = [
+    types.Tool(
+        name="markovian_notarize",
+        title="Markovian Notarize",
+        description=(
+            "Notarize any file or hash into a public transparency log cosigned by 7 "
+            "independent witnesses and anchored to Bitcoin. Hash-only: pass a local file "
+            "path (hashed on this machine; the file never leaves it) or a sha256 hex "
+            "string — only 32 bytes reach the log. Returns a receipt with the leaf index, "
+            "inclusion-proof URL, an offline c2sp.org/tlog-proof bundle URL, and the "
+            "witness trust policy. Proves the hash existed no later than the covering "
+            "checkpoint, in a single history everyone sees identically; does NOT prove "
+            "authorship or that the content is true. Rate-limited (10/hour). Typical use: "
+            "notarize an output the moment it is produced, keep the file, hand anyone the "
+            "proof URL."
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "path": {"type": "string",
+                         "description": "Local file to notarize. Hashed here; never uploaded."},
+                "sha256": {"type": "string",
+                           "description": "Alternatively, a sha256 hex digest (with or without 'sha256:' prefix)."},
+            },
+            "additionalProperties": False,
+        },
+        annotations=types.ToolAnnotations(
+            title="Markovian Notarize",
+            readOnlyHint=False,
+            destructiveHint=False,
+            idempotentHint=False,
+            openWorldHint=True,
+        ),
+    ),
     types.Tool(
         name="markovian_stamp",
         title="Markovian Provenance Stamp",
@@ -287,6 +345,15 @@ async def list_tools() -> list[types.Tool]:
 @server.call_tool()
 async def call_tool(name: str, arguments: dict) -> types.CallToolResult:
     try:
+        if name == "markovian_notarize":
+            nr = await anyio.to_thread.run_sync(
+                lambda: notarize(arguments.get("sha256"), arguments.get("path"))
+            )
+            return types.CallToolResult(
+                content=[types.TextContent(type="text", text=json.dumps(nr))],
+                structuredContent=nr, isError=False,
+            )
+
         if name == "markovian_stamp":
             obj = await anyio.to_thread.run_sync(
                 lambda: stamp_output(arguments["data"], arguments.get("wallet"),
