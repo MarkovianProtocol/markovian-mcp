@@ -18,7 +18,7 @@ Code written against one works unchanged against the other. Pick a transport, no
 
 ## Tools
 
-- **`markovian_notarize(path? | sha256?)`** — notarize any file or hash into the public transparency log (7 independent witness cosignatures, hourly Bitcoin anchoring). Hash-only: a `path` is hashed locally and never uploaded; only 32 bytes reach the log. The receipt carries the leaf index, inclusion-proof URL, an offline `c2sp.org/tlog-proof` bundle URL, and the witness trust policy. Rate-limited (10/hour).
+- **`markovian_notarize(path? | sha256?)`** — notarize any file or hash into the public transparency log (cosignatures from 7 witnesses run by 6 operators, hourly Bitcoin anchoring). Hash-only: a `path` is hashed locally and never uploaded; only 32 bytes reach the log. The receipt carries the leaf index, inclusion-proof URL, an offline `c2sp.org/tlog-proof` bundle URL, and the witness trust policy. Rate-limited (10/hour).
 - **`markovian_stamp(data, wallet?, label?, derived_from?)`** — commit `data` to the Markovian chain and get back a verifiable, tamper-evident stamp (`markovian-provenance/v1`). Only the SHA-256 of your data is sent; the raw data is never stored. No wallet or account is needed, the first stamp just works. The returned `merkle_root` is the handle.
 - **`markovian_verify(merkle_root)`** — check a stamp against the public verifier. No key, no account. An unknown or edited root returns `verified: false`. Anyone can run it, including a party who does not trust the stamper.
 - **`markovian_trace(merkle_root)`** — walk a stamp's `derived_from` lineage. Returns a map of the graph, not a verdict: every node carries `hash_binds` and `anchored`, every edge carries `edge_verified`, and `valid` is true only if all of them check out.

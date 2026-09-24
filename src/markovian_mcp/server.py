@@ -219,7 +219,7 @@ TOOLS = [
         title="Markovian Notarize",
         description=(
             "Notarize any file or hash into a public transparency log cosigned by 7 "
-            "independent witnesses and anchored to Bitcoin. Hash-only: pass a local file "
+            "witnesses from 6 operators and anchored to Bitcoin. Hash-only: pass a local file "
             "path (hashed on this machine; the file never leaves it) or a sha256 hex "
             "string — only 32 bytes reach the log. Returns a receipt with the leaf index, "
             "inclusion-proof URL, an offline c2sp.org/tlog-proof bundle URL, and the "
